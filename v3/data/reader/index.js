@@ -448,10 +448,10 @@ shortcuts.render = (spans = shortcuts.keys()) => {
       dom.querySelector('head').appendChild(t);
 
       // convert notes
-      for (const note of [...dom.querySelectorAll('.note')]) {
-        if (note.value && e.altKey === false) {
-          note.textContent = note.value;
-          note.disabled = true;
+      for (const note of [...dom.querySelectorAll('.note[data-type]')]) {
+        const nv = note.value ?? note.dataset.noteValue ?? note.textContent;
+        if (nv && nv.trim() && e.altKey === false) {
+          note.textContent = nv;
         }
         else {
           note.remove();
