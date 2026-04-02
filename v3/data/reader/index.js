@@ -1164,6 +1164,11 @@ const render = async () => {
     // editor commands issue in FF
     iframe.contentWindow.addEventListener('keydown', e => {
       if (iframe.contentDocument.designMode === 'on') {
+        // Skip design-mode shortcuts when focus is inside a sticky note;
+        // let the note's own contenteditable handle formatting
+        if (e.target.closest && e.target.closest('.note')) {
+          return;
+        }
         const meta = e.metaKey || e.ctrlKey;
         if (meta && e.code === 'KeyB') {
           iframe.contentDocument.execCommand('bold');

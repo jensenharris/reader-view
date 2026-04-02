@@ -18,6 +18,7 @@ document.getElementById('heading').onchange = e => post('heading-' + e.target.va
 
 // move
 document.getElementById('move').onmousedown = () => {
+  post('dragstart');
   document.onmousemove = e => {
     post('move', {
       dx: e.movementX,
@@ -26,6 +27,9 @@ document.getElementById('move').onmousedown = () => {
   };
 };
 document.onmouseup = () => {
+  if (document.onmousemove) {
+    post('dragend');
+  }
   document.onmousemove = '';
 };
 
