@@ -345,7 +345,7 @@ const CSS = `
   padding-left: 2px;
 }
 .note-body ul {
-  list-style-type: disc;
+  list-style-type: "–  ";
 }
 .note-body ol {
   list-style-type: decimal;
@@ -620,7 +620,18 @@ const add = (id, {content, type, box}, active = false) => {
       while (block && block !== noteBody && block.nodeName !== 'P' && block.nodeName !== 'DIV') {
         block = block.parentElement;
       }
-      if (!block || block === noteBody) return;
+      if (!block) return;
+      if (block === noteBody) {
+        // bare text in noteBody without <p> wrapper — wrap it first
+        let textNode = range.startContainer;
+        if (textNode.nodeType === Node.TEXT_NODE && textNode.parentElement === noteBody) {
+          const p = doc.createElement('p');
+          noteBody.insertBefore(p, textNode);
+          p.appendChild(textNode);
+          block = p;
+        }
+        else return;
+      }
 
       const text = block.textContent;
 
@@ -655,6 +666,54 @@ const add = (id, {content, type, box}, active = false) => {
         setCursor(doc, li2);
         return;
       }
+    }
+
+    // Cmd+] → indent list item
+    if (e.code === 'BracketRight' && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      const sel = doc.getSelection();
+      if (!sel.rangeCount) return;
+      const li = findAncestor(sel.getRangeAt(0).startContainer, 'LI', noteBody);
+      if (!li) return;
+      const prev = li.previousElementSibling;
+      if (!prev) return; // can't indent first item
+      const list = li.parentElement;
+      let subList = prev.querySelector(list.nodeName);
+      if (!subList) {
+        subList = doc.createElement(list.nodeName);
+        prev.appendChild(subList);
+      }
+      subList.appendChild(li);
+      setCursor(doc, li);
+      tick();
+      return;
+    }
+
+    // Cmd+[ → outdent list item
+    if (e.code === 'BracketLeft' && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      const sel = doc.getSelection();
+      if (!sel.rangeCount) return;
+      const li = findAncestor(sel.getRangeAt(0).startContainer, 'LI', noteBody);
+      if (!li) return;
+      const list = li.parentElement;
+      const parentLi = findAncestor(list, 'LI', noteBody);
+      if (!parentLi) return; // already top level
+      // move siblings after this li into a new sub-list inside this li
+      const after = [];
+      let sib = li.nextElementSibling;
+      while (sib) { after.push(sib); sib = sib.nextElementSibling; }
+      if (after.length) {
+        let tail = li.querySelector(list.nodeName);
+        if (!tail) { tail = doc.createElement(list.nodeName); li.appendChild(tail); }
+        after.forEach(item => tail.appendChild(item));
+      }
+      // move li after parentLi in the outer list
+      parentLi.after(li);
+      if (!list.firstElementChild) list.remove();
+      setCursor(doc, li);
+      tick();
+      return;
     }
 
     // Backspace at start of li → convert to paragraph
@@ -791,6 +850,17 @@ function enable() {
       iframe.contentDocument.execCommand('defaultParagraphSeparator', false, 'p');
     }
     catch (e) { /* not supported */ }
+
+    // Capture Cmd+[/] before Chrome uses it for navigation
+    iframe.contentWindow.addEventListener('keydown', e => {
+      if ((e.metaKey || e.ctrlKey) && (e.code === 'BracketLeft' || e.code === 'BracketRight')) {
+        const el = iframe.contentDocument.activeElement;
+        if (el && el.classList.contains('note')) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }
+    }, true);
 
     chrome.storage.local.get({
       [key]: {},

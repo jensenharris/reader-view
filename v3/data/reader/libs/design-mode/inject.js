@@ -201,14 +201,18 @@
 
   toolbar.src = chrome.runtime.getURL('/data/reader/libs/design-mode/index.html');
   toolbar.classList.add('edit-toolbar');
+  const startLeft = Math.max(10, Math.round((window.innerWidth - 490) / 2));
   toolbar.style = `
     z-index: calc(Infinity);
     position: fixed;
     top: 10px;
-    right: 10px;
-    width: 476px;
-    height: 60px;
-    border: solid 1px #c4c4c4;
+    left: ${startLeft}px;
+    width: 490px;
+    height: 40px;
+    border: solid 1px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.06);
+    overflow: hidden;
   `;
   document.documentElement.appendChild(toolbar);
 }

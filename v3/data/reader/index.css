@@ -13,9 +13,9 @@
   --color-mode-sepia-bg: #f4ecd8;
   --color-mode-groove-dark-color: #cec4ac;
   --color-mode-groove-dark-bg: #282828;
-  --color-mode-solarized-light-color: #586e75;
+  --color-mode-solarized-light-color: #475b62;
   --color-mode-solarized-light-bg: #fdf6e3;
-  --color-mode-solarized-dark-color: #839496;
+  --color-mode-solarized-dark-color: #94a5a6;
   --color-mode-solarized-dark-bg: #002b36;
   --color-mode-nord-light-color: #2e3440;
   --color-mode-nord-light-bg: #e5e9f0;
@@ -116,9 +116,12 @@ a {
   display: grid;
   grid-template-rows: 1fr 52px;
   z-index: 1;
-  box-shadow: 0 0 0 1px var(--border-color);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.06);
   grid-gap: 10px;
   position: relative;
+  border-radius: 0 12px 12px 0;
+  padding: 6px 0;
+  background-color: var(--bg);
 }
 #toolbar {
   user-select: none;
@@ -143,12 +146,12 @@ a {
   cursor: pointer;
 }
 #toolbar > span {
-  border-bottom: solid 1px var(--border-color);
+  border-bottom: solid 1px rgba(0,0,0,0.04);
 }
 #pinned {
   display: grid;
   place-items: center;
-  border-top: solid 1px var(--border-color);
+  border-top: solid 1px rgba(0,0,0,0.06);
 }
 body[data-toolbar="false"] {
   #toolbar-container {
