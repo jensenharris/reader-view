@@ -168,7 +168,15 @@ function doOutdent(doc, noteBody, tick) {
       setCursor(doc, li);
       tick();
     }
-    // Top-level: already at minimum nesting, no-op
+    else {
+      // Top-level: reduce legacy whole-list margin if present
+      const cur = parseInt(list.style.marginLeft, 10) || 0;
+      if (cur > 0) {
+        const next = cur - 24;
+        list.style.marginLeft = next > 0 ? next + 'px' : '';
+        tick();
+      }
+    }
     return;
   }
   // If inside a list but no LI found (malformed DOM after rehydration), bail out
