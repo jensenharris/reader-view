@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Reader View",
+  "name": "Sunny Reader",
   "description": "__MSG_description__",
   "default_locale": "en",
-  "version": "0.8.3",
+  "version": "0.9",
   "permissions": [
     "storage",
     "activeTab",
@@ -42,7 +42,7 @@
       "description": "Execute Action"
     },
     "toggle-reader-view": {
-      "description": "Toggle the Reader View"
+      "description": "Toggle Sunny Reader"
     }
   },
   "web_accessible_resources": [{

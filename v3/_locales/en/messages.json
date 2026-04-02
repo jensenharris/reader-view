@@ -3,7 +3,7 @@
     "message": "Removes clutter like buttons, backgrounds, adjusts text size, contrast, and layout for better readability"
   },
   "rd_printing": {
-    "message": "Print in the Reader View (command)"
+    "message": "Print in the Sunny Reader (command)"
   },
   "rd_screenshot": {
     "message": "Take a screenshot from the current view (command)"
@@ -48,13 +48,13 @@
     "message": "Open in Simple Mode"
   },
   "bg_reader_view": {
-    "message": "Open in Reader View"
+    "message": "Open in Sunny Reader"
   },
   "bg_inactive_reader_view": {
-    "message": "Open in background Reader View"
+    "message": "Open in background Sunny Reader"
   },
   "bg_switch_reader": {
-    "message": "Switch to Reader View"
+    "message": "Switch to Sunny Reader"
   },
   "bg_options": {
     "message": "Open Options"

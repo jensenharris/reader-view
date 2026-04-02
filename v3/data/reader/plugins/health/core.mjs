@@ -1,7 +1,7 @@
 /**
-    Reader View - Strips away clutter
+    Sunny Reader
 
-    Copyright (C) 2014-2022 [@rNeomy]
+    Copyright © 2026 Jensen Harris
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the Mozilla Public License as published by
@@ -24,7 +24,7 @@ let id;
 
 function enable() {
   id = setTimeout(() => {
-    if (confirm(`Oops! Reader View is crashed. Would you like to restart the extension?
+    if (confirm(`Oops! Sunny Reader crashed. Would you like to restart the extension?
 
 The address of current page will be copied to the clipboard`)) {
       navigator.clipboard.writeText(args.get('url')).finally(() => {

@@ -1,7 +1,7 @@
 /**
-    Reader View - Strips away clutter
+    Sunny Reader
 
-    Copyright (C) 2014-2022 [@rNeomy]
+    Copyright © 2026 Jensen Harris
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the Mozilla Public License as published by
@@ -25,11 +25,11 @@
 const tips = [{
   message: 'By <a data-href="faq23" target=_blank>selecting the actual content or part of it</a> before switching to the reader view, you can prevent unwanted content from cluttering your view. This is also useful if the automatic selection module fails to detect the correct content.'
 }, {
-  message: 'This page contains cross-origin images that Reader View cannot access. You can <a href="#" data-cmd="image-permission">click here</a> to grant this access.',
+  message: 'This page contains cross-origin images that Sunny Reader cannot access. You can <a href="#" data-cmd="image-permission">click here</a> to grant this access.',
   hidden: true,
   save: false
 }, {
-  message: 'If you prefer "Reader View" to display the "favicon" of websites, <a href="#" data-cmd="favicon-permission">click here</a>.',
+  message: 'If you prefer "Sunny Reader" to display the "favicon" of websites, <a href="#" data-cmd="favicon-permission">click here</a>.',
   hidden: true,
   save: false
 }, {

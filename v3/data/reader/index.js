@@ -1,7 +1,7 @@
 /**
-    Reader View - Strips away clutter
+    Sunny Reader
 
-    Copyright (C) 2014-2022 [@rNeomy]
+    Copyright © 2026 Jensen Harris
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the Mozilla Public License as published by
@@ -81,7 +81,8 @@ const add = (src, o) => new Promise((resolve, reject) => {
 const hash = link => {
   const hash = link.hash.substring(1);
 
-  const a = iframe.contentDocument.querySelector(`[name="${hash}"],#${hash}`);
+  const escaped = CSS.escape(hash);
+  const a = iframe.contentDocument.querySelector(`[name="${escaped}"],#${escaped}`);
   if (a) {
     a.scrollIntoView({
       block: 'start',
@@ -151,7 +152,7 @@ window.nav = nav;
 
 // favicon
 const favicon = article => {
-  const next = (href = '/data/icons/32.png') => {
+  const next = (href = '/data/icons/blue/32.png') => {
     const link = Object.assign(document.querySelector(`link[rel*='icon']`) || document.createElement('link'), {
       rel: 'shortcut icon',
       href
@@ -829,8 +830,8 @@ const render = async () => {
 
   const currentDate = new Date();
   document.title = document.oTitle = config.prefs.title
-    .replace('[ORIGINAL]', (article.title || args.get('url')).replace(' :: Reader View', ''))
-    .replace('[BRAND]', 'Reader View')
+    .replace('[ORIGINAL]', (article.title || args.get('url')).replace(' :: Sunny Reader', ''))
+    .replace('[BRAND]', 'Sunny Reader')
     .replace('[DD]', String(currentDate.getDate()).padStart(2, '0'))
     .replace('[MM]', String(currentDate.getMonth() + 1).padStart(2, '0'))
     .replace('[YYYY]', currentDate.getFullYear());

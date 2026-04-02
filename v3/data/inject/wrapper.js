@@ -1,7 +1,7 @@
 /**
-    Reader View - Strips away clutter
+    Sunny Reader
 
-    Copyright (C) 2014-2022 [@rNeomy]
+    Copyright © 2026 Jensen Harris
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the Mozilla Public License as published by
@@ -207,7 +207,7 @@ try {
                 all: initial;
                 font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
                 font-size: 16px;
-                color: #bcc5ce;">Reader View will start once the page has finished loading...</span>
+                color: #bcc5ce;">Sunny Reader will start once the page has finished loading...</span>
               <input type="button" value="Skip Waiting" style="
                 all: initial;
                 font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
@@ -246,7 +246,7 @@ try {
     const convert = () => {
       // health check
       const id = setTimeout(() => {
-        if (confirm(`Oops! Reader View is crashed. Would you like to restart the extension?`)) {
+        if (confirm(`Oops! Sunny Reader crashed. Would you like to restart the extension?`)) {
           chrome.runtime.reload();
         }
       }, 5000);

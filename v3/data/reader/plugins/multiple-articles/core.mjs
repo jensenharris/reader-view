@@ -1,7 +1,7 @@
 /**
-    Reader View - Strips away clutter
+    Sunny Reader
 
-    Copyright (C) 2014-2022 [@rNeomy]
+    Copyright © 2026 Jensen Harris
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the Mozilla Public License as published by
