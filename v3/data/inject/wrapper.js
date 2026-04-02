@@ -266,12 +266,16 @@ try {
           // Set width if it's missing
           if (!svg.hasAttribute('width')) {
             const width = style.width;
-            svg.setAttribute('width', width);
+            if (width && width !== 'auto') {
+              svg.setAttribute('width', width);
+            }
           }
           // Set height if it's missing
           if (!svg.hasAttribute('height')) {
             const height = style.height;
-            svg.setAttribute('height', height);
+            if (height && height !== 'auto') {
+              svg.setAttribute('height', height);
+            }
           }
         }
       }

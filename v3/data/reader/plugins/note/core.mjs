@@ -55,12 +55,14 @@ const TEXT_COLORS = [
   {color: '#7f8c8d', label: 'Gray'}
 ];
 
-const FONT_SIZES = [11, 12, 13, 14, 16];
+const FONT_SIZES = [12, 13, 14, 15, 16, 17];
 let lastType = 0;
 let noteFontSize = 14;
 
 const notes = {};
+const pinnedNotes = {};
 const key = 'notes:' + args.get('url').split('#')[0];
+const pinnedKey = 'notes:pinned';
 
 /* --- Helpers --- */
 
@@ -325,9 +327,21 @@ const CSS = `
   -webkit-user-select: none;
   user-select: none;
   white-space: normal;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.note[data-type].note-nearby .note-toolbar,
+.note[data-type]:focus-within .note-toolbar {
+  opacity: 1;
 }
 .note-toolbar:active {
   cursor: grabbing;
+}
+.note-left-actions {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  gap: 6px;
 }
 .note-close {
   width: 12px;
@@ -335,7 +349,7 @@ const CSS = `
   border-radius: 50%;
   background-color: currentColor;
   opacity: 0.12;
-  cursor: default;
+  cursor: pointer;
   flex-shrink: 0;
   transition: opacity 0.15s ease, background-color 0.15s ease;
   display: flex;
@@ -357,17 +371,38 @@ const CSS = `
 .note-close:hover::after {
   opacity: 1;
 }
+.note-pin {
+  flex-shrink: 0;
+  opacity: 0.2;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+  display: flex;
+  align-items: center;
+}
+.note-pin svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+  transform: rotate(90deg);
+}
+.note-pin:hover {
+  opacity: 0.45;
+}
+.note[data-pinned="true"] .note-pin {
+  opacity: 0.7;
+}
 .note-colors {
   display: flex;
   flex-direction: row-reverse;
   align-items: center;
   margin-left: auto;
+  cursor: pointer;
 }
 .note-color-btn {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  cursor: default;
+  cursor: pointer;
   flex-shrink: 0;
   transition: opacity 0.15s ease;
   opacity: 0.45;
@@ -460,6 +495,11 @@ const CSS = `
   overflow-wrap: break-word;
   cursor: text;
   position: relative;
+  box-shadow: inset 0 4px 8px -4px rgba(0,0,0,0.03), inset 0 0 16px rgba(0,0,0,0.01);
+  transition: box-shadow 0.2s ease;
+}
+.note[data-type].note-nearby .note-body,
+.note[data-type]:focus-within .note-body {
   box-shadow: inset 0 4px 8px -4px rgba(0,0,0,0.06), inset 0 0 16px rgba(0,0,0,0.02);
   -webkit-user-select: text;
   user-select: text;
@@ -1379,10 +1419,11 @@ function fpOnScroll(doc) {
 
 /* --- Core --- */
 
-const add = (id, {content, type, box}, active = false) => {
+const add = (id, {content, type, box, pinned: initPinned}, active = false) => {
   const doc = iframe.contentDocument;
 
   type = isNaN(type) ? lastType : type;
+  let pinned = Boolean(initPinned);
 
   box = box || {
     left: Math.round(400 + (Math.random() - 0.5) * 300),
@@ -1390,6 +1431,19 @@ const add = (id, {content, type, box}, active = false) => {
     width: 300,
     height: 300
   };
+
+  // Clamp position so note stays within visible bounds
+  {
+    const vw = doc.documentElement.clientWidth;
+    const contentH = doc.body.scrollHeight;
+    // Horizontal: keep note within viewport width
+    box.left = Math.min(box.left, vw - box.width);
+    box.left = Math.max(box.left, 0);
+    // Vertical: keep note above the bottom of page content
+    if (contentH > 0 && box.top + box.height > contentH) {
+      box.top = Math.max(0, contentH - box.height);
+    }
+  }
 
   const setColor = newType => {
     type = newType;
@@ -1403,7 +1457,8 @@ const add = (id, {content, type, box}, active = false) => {
     fpHidePalette(true);
     tick.active = false;
     delete notes[id];
-    chrome.storage.local.set({[key]: notes}, () => wrapper.remove());
+    delete pinnedNotes[id];
+    chrome.storage.local.set({[key]: notes, [pinnedKey]: pinnedNotes}, () => wrapper.remove());
   };
 
   let confirmOverlay = null;
@@ -1475,18 +1530,31 @@ const add = (id, {content, type, box}, active = false) => {
   const save = () => {
     const val = serialize(noteBody);
     wrapper.setAttribute('data-note-value', val);
-    notes[id] = {
+    const noteData = {
       date: Date.now(),
       box,
       type,
-      content: val
+      content: val,
+      pinned
     };
-    chrome.storage.local.set({
-      [key]: Object.entries(notes).filter(([, o]) => o.content.trim()).reduce((p, [nid, o]) => {
-        p[nid] = o;
-        return p;
-      }, {})
-    });
+    if (pinned) {
+      pinnedNotes[id] = noteData;
+      delete notes[id];
+    }
+    else {
+      notes[id] = noteData;
+      delete pinnedNotes[id];
+    }
+    const store = {};
+    store[key] = Object.entries(notes).filter(([, o]) => o.content.trim()).reduce((p, [nid, o]) => {
+      p[nid] = o;
+      return p;
+    }, {});
+    store[pinnedKey] = Object.entries(pinnedNotes).filter(([, o]) => o.content.trim()).reduce((p, [nid, o]) => {
+      p[nid] = o;
+      return p;
+    }, {});
+    chrome.storage.local.set(store);
   };
   const tick = () => {
     if (tick.active) {
@@ -1499,10 +1567,80 @@ const add = (id, {content, type, box}, active = false) => {
   };
   tick.active = true;
 
+  const pinNote = () => {
+    pinned = true;
+    wrapper.setAttribute('data-pinned', 'true');
+    pinBtn.title = 'Unpin from all pages';
+    save();
+  };
+
+  let unpinOverlay = null;
+  const unpinNote = () => {
+    if (unpinOverlay) return;
+
+    const overlay = doc.createElement('div');
+    overlay.classList.add('note-confirm-overlay');
+    unpinOverlay = overlay;
+
+    const msg = doc.createElement('span');
+    msg.classList.add('note-confirm-msg');
+    msg.textContent = 'Unpin this note? It will only appear on this page.';
+    overlay.appendChild(msg);
+
+    const actions = doc.createElement('div');
+    actions.classList.add('note-confirm-actions');
+
+    const btnUnpin = doc.createElement('button');
+    btnUnpin.classList.add('note-confirm-btn', 'note-confirm-btn--delete');
+    btnUnpin.textContent = 'Unpin';
+
+    const btnCancel = doc.createElement('button');
+    btnCancel.classList.add('note-confirm-btn', 'note-confirm-btn--cancel');
+    btnCancel.textContent = 'Cancel';
+
+    actions.appendChild(btnUnpin);
+    actions.appendChild(btnCancel);
+    overlay.appendChild(actions);
+    wrapper.appendChild(overlay);
+
+    const dismiss = () => {
+      overlay.classList.add('hiding');
+      overlay.addEventListener('animationend', () => {
+        overlay.remove();
+        unpinOverlay = null;
+      }, {once: true});
+    };
+
+    btnUnpin.addEventListener('mousedown', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      dismiss();
+      pinned = false;
+      wrapper.removeAttribute('data-pinned');
+      pinBtn.title = 'Pin to all pages';
+      save();
+    });
+    btnCancel.addEventListener('mousedown', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      dismiss();
+    });
+    overlay.addEventListener('keydown', e => {
+      if (e.code === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        dismiss();
+      }
+    });
+
+    btnCancel.focus();
+  };
+
   // Wrapper
   const wrapper = doc.createElement('div');
   wrapper.classList.add('note');
   wrapper.setAttribute('data-type', type);
+  if (pinned) wrapper.setAttribute('data-pinned', 'true');
   if (active) {
     wrapper.classList.add('note-enter');
     wrapper.addEventListener('animationend', () => wrapper.classList.remove('note-enter'), {once: true});
@@ -1526,18 +1664,36 @@ const add = (id, {content, type, box}, active = false) => {
   // Toolbar
   const toolbar = doc.createElement('div');
   toolbar.classList.add('note-toolbar');
-  toolbar.title = 'Drag to move';
 
-  // Close dot (left side, macOS-style)
+  // Left actions (close + pin)
+  const leftActions = doc.createElement('div');
+  leftActions.classList.add('note-left-actions');
+
   const closeBtn = doc.createElement('span');
   closeBtn.classList.add('note-close');
-  closeBtn.title = 'Delete note';
   closeBtn.addEventListener('mousedown', e => {
     e.preventDefault();
     e.stopPropagation();
     deleteNote();
   });
-  toolbar.appendChild(closeBtn);
+  leftActions.appendChild(closeBtn);
+
+  const pinBtn = doc.createElement('span');
+  pinBtn.classList.add('note-pin');
+  pinBtn.title = pinned ? 'Unpin from all pages' : 'Pin to all pages';
+  pinBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M16 9V4h1V2H7v2h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg>';
+  pinBtn.addEventListener('mousedown', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (pinned) {
+      unpinNote();
+    }
+    else {
+      pinNote();
+    }
+  });
+  leftActions.appendChild(pinBtn);
+  toolbar.appendChild(leftActions);
 
   // Color picker (right side)
   const colors = doc.createElement('div');
@@ -1546,7 +1702,6 @@ const add = (id, {content, type, box}, active = false) => {
   // Color palette button (first in DOM = rightmost due to row-reverse)
   const colorBtn = doc.createElement('span');
   colorBtn.classList.add('note-color-btn');
-  colorBtn.title = 'Change color';
   colorBtn.addEventListener('mousedown', e => {
     e.preventDefault();
     e.stopPropagation();
@@ -1573,7 +1728,6 @@ const add = (id, {content, type, box}, active = false) => {
   const fontBtn = doc.createElement('span');
   fontBtn.classList.add('note-font-btn');
   fontBtn.textContent = 'A';
-  fontBtn.title = 'Cycle font size';
   fontBtn.addEventListener('mousedown', e => {
     e.preventDefault();
     e.stopPropagation();
@@ -1849,7 +2003,7 @@ const add = (id, {content, type, box}, active = false) => {
 
   // Drag (toolbar only, not on close or colors)
   toolbar.addEventListener('mousedown', ed => {
-    if (ed.target.closest('.note-colors') || ed.target.closest('.note-close')) return;
+    if (ed.target.closest('.note-colors') || ed.target.closest('.note-left-actions')) return;
 
     ed.preventDefault();
     colors.classList.remove('expanded');
@@ -1967,6 +2121,7 @@ let fpSelectionHandler = null;
 let fpMouseDownHandler = null;
 let fpMouseUpHandler = null;
 let fpScrollHandler = null;
+let noteProximityHandler = null;
 
 function enable() {
   const styles = document.createElement('style');
@@ -2005,18 +2160,37 @@ function enable() {
     doc.addEventListener('mouseup', fpMouseUpHandler);
     iframe.contentWindow.addEventListener('scroll', fpScrollHandler);
 
+    // Proximity detection: show toolbar when cursor is within 75px of a note
+    noteProximityHandler = e => {
+      for (const note of doc.querySelectorAll('.note[data-type]')) {
+        const r = note.getBoundingClientRect();
+        const dx = Math.max(0, r.left - e.clientX, e.clientX - r.right);
+        const dy = Math.max(0, r.top - e.clientY, e.clientY - r.bottom);
+        note.classList.toggle('note-nearby', Math.sqrt(dx * dx + dy * dy) <= 50);
+      }
+    };
+    doc.addEventListener('mousemove', noteProximityHandler);
+
     // Guard against designMode eating keystrokes in notes
     setupDesignModeGuard(doc);
 
     chrome.storage.local.get({
       [key]: {},
+      [pinnedKey]: {},
       'notes:last-type': 0,
       'notes:font-size': 14
     }, prefs => {
       lastType = prefs['notes:last-type'];
       noteFontSize = prefs['notes:font-size'];
       doc.body.style.setProperty('--note-font-size', noteFontSize + 'px');
+
+      // Load page-specific notes
       for (const [id, note] of Object.entries(prefs[key])) {
+        add(id, note);
+      }
+      // Load pinned (global) notes
+      for (const [id, note] of Object.entries(prefs[pinnedKey])) {
+        Object.assign(pinnedNotes, {[id]: note});
         add(id, note);
       }
     });
@@ -2040,6 +2214,7 @@ function disable() {
     teardownDesignModeGuard(doc);
 
     // Remove format palette listeners
+    if (noteProximityHandler) doc.removeEventListener('mousemove', noteProximityHandler);
     if (fpSelectionHandler) doc.removeEventListener('selectionchange', fpSelectionHandler);
     if (fpMouseDownHandler) doc.removeEventListener('mousedown', fpMouseDownHandler);
     if (fpMouseUpHandler) doc.removeEventListener('mouseup', fpMouseUpHandler);
