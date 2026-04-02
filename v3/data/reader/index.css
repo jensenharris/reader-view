@@ -21,6 +21,10 @@
   --color-mode-nord-light-bg: #e5e9f0;
   --color-mode-nord-dark-color: #e5e9f0;
   --color-mode-nord-dark-bg: #2e3440;
+  --color-mode-rose-light-color: #452e36;
+  --color-mode-rose-light-bg: #f5eaed;
+  --color-mode-rose-dark-color: #d4b2b8;
+  --color-mode-rose-dark-bg: #2c1f23;
   --color-font-utils-light: #a2a2a2;
   --border-color: rgba(181, 181, 181, 0.3);
   --guide-color: rgba(181, 181, 181, 0.2);
@@ -94,6 +98,16 @@ body[data-mode="nord-light"] {
 body[data-mode="nord-dark"] {
   --fg: var(--color-mode-nord-dark-color);
   --bg: var(--color-mode-nord-dark-bg);
+  --fg-selected: var(--fg-selected-dark);
+}
+body[data-mode="rose-light"] {
+  --fg: var(--color-mode-rose-light-color);
+  --bg: var(--color-mode-rose-light-bg);
+  --fg-selected: var(--fg-selected-light);
+}
+body[data-mode="rose-dark"] {
+  --fg: var(--color-mode-rose-dark-color);
+  --bg: var(--color-mode-rose-dark-bg);
   --fg-selected: var(--fg-selected-dark);
 }
 input {
@@ -274,6 +288,14 @@ span[data-cmd="open-font-utils"] {
   color: var(--color-mode-nord-dark-color);
   background-color: var(--color-mode-nord-dark-bg);
 }
+#font-utils span[data-cmd="color-mode-rose-light"] {
+  color: var(--color-mode-rose-light-color);
+  background-color: var(--color-mode-rose-light-bg);
+}
+#font-utils span[data-cmd="color-mode-rose-dark"] {
+  color: var(--color-mode-rose-dark-color);
+  background-color: var(--color-mode-rose-dark-bg);
+}
 
 body[data-mode="light"] #font-utils span[data-cmd="color-mode-light"]::after,
 body[data-mode="dark"] #font-utils span[data-cmd="color-mode-dark"]::after,
@@ -282,6 +304,8 @@ body[data-mode="groove-dark"] #font-utils span[data-cmd="color-mode-groove-dark"
 body[data-mode="solarized-light"] #font-utils span[data-cmd="color-mode-solarized-light"]::after,
 body[data-mode="solarized-dark"] #font-utils span[data-cmd="color-mode-solarized-dark"]::after,
 body[data-mode="nord-light"] #font-utils span[data-cmd="color-mode-nord-light"]::after,
+body[data-mode="rose-light"] #font-utils span[data-cmd="color-mode-rose-light"]::after,
+body[data-mode="rose-dark"] #font-utils span[data-cmd="color-mode-rose-dark"]::after,
 body[data-mode="nord-dark"] #font-utils span[data-cmd="color-mode-nord-dark"]::after {
   content: '';
   position: absolute;

@@ -376,7 +376,17 @@ chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.local.get('font', prefs => {
     if (prefs.font === 'serif' || prefs.font === 'sans-serif') {
       chrome.storage.local.set({
-        font: (prefs.font === 'serif' ? `Georgia, 'Times New Roman', serif` : `Helvetica, Arial, sans-serif`)
+        font: (prefs.font === 'serif' ? `'Source Serif 4', Georgia, 'Times New Roman', serif` : `'Inter', Helvetica, Arial, sans-serif`)
+      });
+    }
+    else if (prefs.font === `Helvetica, Arial, sans-serif`) {
+      chrome.storage.local.set({
+        font: `'Inter', Helvetica, Arial, sans-serif`
+      });
+    }
+    else if (prefs.font === `Georgia, 'Times New Roman', serif`) {
+      chrome.storage.local.set({
+        font: `'Source Serif 4', Georgia, 'Times New Roman', serif`
       });
     }
   });

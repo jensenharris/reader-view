@@ -383,6 +383,10 @@
     border-radius: 12px;
     box-shadow: 0 2px 12px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.06);
     overflow: hidden;
+    opacity: 0.88;
+    transition: opacity 0.25s ease;
   `;
+  toolbar.addEventListener('mouseenter', () => toolbar.style.opacity = '1');
+  toolbar.addEventListener('mouseleave', () => toolbar.style.opacity = '0.88');
   document.documentElement.appendChild(toolbar);
 }

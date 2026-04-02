@@ -8,13 +8,13 @@ self.defaults = {
   'max-wait-for-page-load': 3, // seconds
   'preferred-dark-mode': 'groove-dark',
   'preferred-light-mode': 'sepia',
-  'font': 'Helvetica, Arial, sans-serif',
+  'font': `'Inter', Helvetica, Arial, sans-serif`,
   'supported-fonts': [{
     name: 'Sans-serif',
-    value: `Helvetica, Arial, sans-serif`
+    value: `'Inter', Helvetica, Arial, sans-serif`
   }, {
     name: `Serif`,
-    value: `Georgia, 'Times New Roman', serif`
+    value: `'Source Serif 4', Georgia, 'Times New Roman', serif`
   }, {
     name: `Helvetica`,
     value: `'Helvetica', sans-serif`
@@ -46,7 +46,7 @@ self.defaults = {
   'width': 600,
   'line-height': 32,
   'column-count': 1,
-  'text-align': true,
+  'text-align': false,
   'fixation-point': 0, // 0: off, 1-5 (text-vide)
   'reader-mode': false,
   'show-icon': true,

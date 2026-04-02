@@ -924,6 +924,18 @@ const render = async () => {
     --fg: ${gcs.getPropertyValue('--color-mode-nord-dark-color')};
     --bd: ${gcs.getPropertyValue('--color-mode-nord-dark-color')};
     --bg: ${gcs.getPropertyValue('--color-mode-nord-dark-bg')};
+  }
+  html[data-mode="rose-light"] {
+    color-scheme: light;
+    --fg: ${gcs.getPropertyValue('--color-mode-rose-light-color')};
+    --bd: ${gcs.getPropertyValue('--color-mode-rose-light-color')};
+    --bg: ${gcs.getPropertyValue('--color-mode-rose-light-bg')};
+  }
+  html[data-mode="rose-dark"] {
+    color-scheme: dark;
+    --fg: ${gcs.getPropertyValue('--color-mode-rose-dark-color')};
+    --bd: ${gcs.getPropertyValue('--color-mode-rose-dark-color')};
+    --bg: ${gcs.getPropertyValue('--color-mode-rose-dark-bg')};
   }`;
   iframe.contentDocument.getElementById('reader-title').textContent = article.title || 'Unknown Title';
   iframe.contentDocument.getElementById('reader-content').outerHTML = content;
