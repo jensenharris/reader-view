@@ -328,6 +328,84 @@ try {
         throw Error('No article was detected in this page. Please select the desire content then retry.');
       }
 
+      // Remove leading elements that duplicate the reader view header (byline, date) and deduplicate images
+      try {
+        const div = document.createElement('div');
+        div.innerHTML = article.content;
+        const page = div.querySelector('[id^="readability-page"]') || div;
+
+        // Remove leading elements that match the extracted byline (only short metadata-like elements)
+        if (article.byline) {
+          const normalize = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+          const bylineNorm = normalize(article.byline);
+          for (const child of [...page.children].slice(0, 6)) {
+            const text = child.textContent.trim();
+            if (!text) {
+              continue;
+            }
+            // Only consider short elements (metadata, not article content)
+            if (text.length > 150) {
+              break;
+            }
+            const textNorm = normalize(text);
+            if (textNorm && (bylineNorm.includes(textNorm) || textNorm.includes(bylineNorm))) {
+              child.remove();
+            }
+            else if (/^by\s/i.test(text) && bylineNorm.includes(normalize(text.replace(/^by\s+/i, '')))) {
+              child.remove();
+            }
+          }
+        }
+
+        // Remove leading date/time elements that duplicate published_time header
+        if (article.publishedTime) {
+          for (const child of [...page.children].slice(0, 6)) {
+            const text = child.textContent.trim();
+            if (!text) {
+              continue;
+            }
+            if (text.length > 150) {
+              break;
+            }
+            if (child.querySelector('time') || /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun|Updated)\b/i.test(text)) {
+              child.remove();
+            }
+          }
+        }
+
+        // Remove video/audio elements with blob: URLs (inaccessible from extension context)
+        for (const el of page.querySelectorAll('video[src^="blob:"], audio[src^="blob:"]')) {
+          el.remove();
+        }
+
+        // Remove duplicate images (same src appearing more than once)
+        const images = page.querySelectorAll('img');
+        const seenSrcs = new Set();
+        for (const img of images) {
+          const src = img.getAttribute('src');
+          if (!src) {
+            continue;
+          }
+          if (seenSrcs.has(src)) {
+            const container = img.closest('figure') || img.parentElement;
+            if (container && container !== page) {
+              container.remove();
+            }
+            else {
+              img.remove();
+            }
+          }
+          else {
+            seenSrcs.add(src);
+          }
+        }
+
+        article.content = div.innerHTML;
+      }
+      catch (e) {
+        console.warn('Reader View: content cleanup failed', e);
+      }
+
       article.lang = article.lang || document.documentElement?.lang || 'en';
 
       article.chapters = {};
