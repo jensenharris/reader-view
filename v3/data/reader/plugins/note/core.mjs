@@ -100,31 +100,31 @@ function setCursor(doc, node) {
 function doIndent(doc, noteBody, tick) {
   const sel = doc.getSelection();
   if (!sel.rangeCount) return;
-  const li = findAncestor(sel.getRangeAt(0).startContainer, 'LI', noteBody);
+  const start = sel.getRangeAt(0).startContainer;
+  const li = findAncestor(start, 'LI', noteBody);
   if (li) {
     const prev = li.previousElementSibling;
     if (prev) {
       // Nest under previous sibling
       const list = li.parentElement;
-      let subList = prev.querySelector(list.nodeName);
+      let subList = prev.querySelector(':scope > ' + list.nodeName);
       if (!subList) {
         subList = doc.createElement(list.nodeName);
         prev.appendChild(subList);
       }
       subList.appendChild(li);
       setCursor(doc, li);
+      tick();
     }
-    else {
-      // First item or only item: increase margin on the whole list
-      const list = li.parentElement;
-      const cur = parseInt(list.style.marginLeft, 10) || 0;
-      list.style.marginLeft = (cur + 24) + 'px';
-    }
-    tick();
+    // First item: can't structurally nest, no-op
+    return;
+  }
+  // If inside a list but no LI found (malformed DOM after rehydration), bail out
+  if (findAncestor(start, 'UL', noteBody) || findAncestor(start, 'OL', noteBody)) {
     return;
   }
   // Paragraph: increase margin-left by 24px
-  let block = sel.getRangeAt(0).startContainer;
+  let block = start;
   if (block.nodeType === Node.TEXT_NODE) block = block.parentElement;
   while (block && block !== noteBody && block.nodeName !== 'P' && block.nodeName !== 'DIV') {
     block = block.parentElement;
@@ -139,7 +139,8 @@ function doIndent(doc, noteBody, tick) {
 function doOutdent(doc, noteBody, tick) {
   const sel = doc.getSelection();
   if (!sel.rangeCount) return;
-  const li = findAncestor(sel.getRangeAt(0).startContainer, 'LI', noteBody);
+  const start = sel.getRangeAt(0).startContainer;
+  const li = findAncestor(start, 'LI', noteBody);
   if (li) {
     const list = li.parentElement;
     const parentLi = findAncestor(list, 'LI', noteBody);
@@ -165,18 +166,17 @@ function doOutdent(doc, noteBody, tick) {
       parentLi.after(li);
       if (!list.firstElementChild) list.remove();
       setCursor(doc, li);
+      tick();
     }
-    else {
-      // Top-level list item: decrease margin on the whole list
-      const cur = parseInt(list.style.marginLeft, 10) || 0;
-      const next = Math.max(0, cur - 24);
-      list.style.marginLeft = next ? next + 'px' : '';
-    }
-    tick();
+    // Top-level: already at minimum nesting, no-op
+    return;
+  }
+  // If inside a list but no LI found (malformed DOM after rehydration), bail out
+  if (findAncestor(start, 'UL', noteBody) || findAncestor(start, 'OL', noteBody)) {
     return;
   }
   // Paragraph: decrease margin-left by 24px (min 0)
-  let block = sel.getRangeAt(0).startContainer;
+  let block = start;
   if (block.nodeType === Node.TEXT_NODE) block = block.parentElement;
   while (block && block !== noteBody && block.nodeName !== 'P' && block.nodeName !== 'DIV') {
     block = block.parentElement;
