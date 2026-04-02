@@ -142,6 +142,14 @@ function doOutdent(doc, noteBody, tick) {
     const list = li.parentElement;
     const parentLi = findAncestor(list, 'LI', noteBody);
     if (parentLi) {
+      // If the sub-list has margin-left, reduce that first before structural outdent
+      const cur = parseInt(list.style.marginLeft, 10) || 0;
+      if (cur > 0) {
+        const next = cur - 24;
+        list.style.marginLeft = next > 0 ? next + 'px' : '';
+        tick();
+        return;
+      }
       // move siblings after this li into a new sub-list inside this li
       const after = [];
       let sib = li.nextElementSibling;
@@ -470,6 +478,10 @@ const CSS = `
 .note-body ul, .note-body ol {
   margin: 0 0 10px 0;
   padding-left: 24px;
+}
+.note-body li > ul, .note-body li > ol {
+  margin-top: 0.35em;
+  margin-bottom: 0;
 }
 .note-body li {
   margin-block-end: 0.35em;
