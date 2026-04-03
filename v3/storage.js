@@ -1,5 +1,10 @@
 class Storage {
+  _db = null;
+
   prepare() {
+    if (this._db) {
+      return Promise.resolve(this._db);
+    }
     return new Promise((resolve, reject) => {
       const request = indexedDB.open('content-temporary-storage', 1);
 
@@ -16,12 +21,14 @@ class Storage {
         objectStore.createIndex('id', 'id', {unique: true});
 
         objectStore.transaction.oncomplete = () => {
+          this._db = db;
           resolve(db);
         };
       };
       request.onsuccess = e => {
         const db = e.target.result;
 
+        this._db = db;
         resolve(db);
       };
     });
@@ -58,6 +65,7 @@ class Storage {
     db.transaction(['storage'], 'readwrite').objectStore('storage').delete(id);
   }
   clean() {
+    this._db = null;
     indexedDB.deleteDatabase('content-temporary-storage');
   }
 }

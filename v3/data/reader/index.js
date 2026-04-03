@@ -293,37 +293,40 @@ shortcuts.render = (spans = shortcuts.keys()) => {
   });
 }
 
-/* fake speech (until the plugin loads) to prevent rearrangement */
-{
+const toolbar = document.getElementById('toolbar');
+const createButton = (id, icon, i18nKey, opts = {}) => {
   const span = document.createElement('span');
-  span.id = 'speech-button';
-  span.title = chrome.i18n.getMessage('rd_speech');
-  span.classList.add('icon-speech');
+  span.id = id;
+  span.title = chrome.i18n.getMessage(i18nKey) || '';
+  if (icon) {
+    span.classList.add(icon);
+  }
+  if (opts.hidden !== false) {
+    span.classList.add('hidden');
+  }
+  if (opts.cmd) {
+    span.dataset.cmd = opts.cmd;
+  }
+  if (opts.disabled) {
+    span.dataset.disabled = true;
+  }
+  toolbar.appendChild(span);
+  return span;
+};
 
-  document.getElementById('toolbar').appendChild(span);
-}
+/* fake speech (until the plugin loads) to prevent rearrangement */
+createButton('speech-button', 'icon-speech', 'rd_speech', {hidden: false});
+
 /* printing */
 {
-  const span = document.createElement('span');
-  span.title = chrome.i18n.getMessage('rd_printing');
-  span.classList.add('icon-print', 'hidden');
-  span.id = 'printing-button';
-
+  const span = createButton('printing-button', 'icon-print', 'rd_printing');
   span.onclick = () => iframe.contentWindow.print();
-  shortcuts.set(span, {
-    id: 'print',
-    action: span.onclick
-  });
-  document.getElementById('toolbar').appendChild(span);
+  shortcuts.set(span, {id: 'print', action: span.onclick});
 }
 
 /* screenshot */
 {
-  const span = document.createElement('span');
-  span.title = chrome.i18n.getMessage('rd_screenshot');
-  span.classList.add('icon-screenshot', 'hidden');
-  span.id = 'screenshot-button';
-
+  const span = createButton('screenshot-button', 'icon-screenshot', 'rd_screenshot');
   span.onclick = () => {
     chrome.permissions.request({
       origins: ['<all_urls>']
@@ -339,7 +342,7 @@ shortcuts.render = (spans = shortcuts.keys()) => {
             window.notify(lastError);
           }
           else {
-            const {width} = document.getElementById('toolbar').getBoundingClientRect();
+            const {width} = toolbar.getBoundingClientRect();
 
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
@@ -348,7 +351,7 @@ shortcuts.render = (spans = shortcuts.keys()) => {
             image.onload = () => {
               canvas.width = image.naturalWidth - width * devicePixelRatio;
               canvas.height = image.naturalHeight;
-              ctx.drawImage(image, width * 2, 0, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
+              ctx.drawImage(image, width * devicePixelRatio, 0, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
               download(canvas.toDataURL('image/png'), 'image/png');
 
               e.style.visibility = 'visible';
@@ -362,19 +365,12 @@ shortcuts.render = (spans = shortcuts.keys()) => {
       }
     });
   };
-  shortcuts.set(span, {
-    id: 'screenshot',
-    action: span.onclick
-  });
-  document.getElementById('toolbar').appendChild(span);
+  shortcuts.set(span, {id: 'screenshot', action: span.onclick});
 }
+
 /* email */
 {
-  const span = document.createElement('span');
-  span.title = chrome.i18n.getMessage('rd_email');
-  span.classList.add('icon-mail', 'hidden');
-  span.id = 'mail-button';
-
+  const span = createButton('mail-button', 'icon-mail', 'rd_email');
   span.onclick = () => {
     const a = document.createElement('a');
     a.target = '_blank';
@@ -392,18 +388,12 @@ shortcuts.render = (spans = shortcuts.keys()) => {
     a.href += encodeURIComponent(body);
     a.click();
   };
-  shortcuts.set(span, {
-    id: 'email',
-    action: span.onclick
-  });
-  document.getElementById('toolbar').appendChild(span);
+  shortcuts.set(span, {id: 'email', action: span.onclick});
 }
+
 /* save as HTML or MarkDown */
 {
-  const span = document.createElement('span');
-  span.title = chrome.i18n.getMessage('rd_save');
-  span.classList.add('icon-save', 'hidden');
-  span.id = 'save-button';
+  const span = createButton('save-button', 'icon-save', 'rd_save');
   span.onclick = e => {
     const next = (href, type, convert) => {
       // only for mouse clicks
@@ -465,58 +455,32 @@ shortcuts.render = (spans = shortcuts.keys()) => {
       next(content, 'text/html', true);
     }
   };
-  shortcuts.set(span, {
-    id: 'save',
-    action: span.onclick
-  });
-  document.getElementById('toolbar').appendChild(span);
+  shortcuts.set(span, {id: 'save', action: span.onclick});
 }
+
 /* fullscreen */
 {
-  const span = document.createElement('span');
-  span.title = chrome.i18n.getMessage('rd_fullscreen');
-  span.classList.add('icon-fullscreen', 'hidden');
-  span.id = 'fullscreen-button';
+  const span = createButton('fullscreen-button', 'icon-fullscreen', 'rd_fullscreen');
   span.onclick = () => {
-    // what if we are on the automatic fullscreen
     if (window.matchMedia('(display-mode: fullscreen)').matches) {
-      chrome.runtime.sendMessage({
-        cmd: 'exit-fullscreen'
-      });
+      chrome.runtime.sendMessage({cmd: 'exit-fullscreen'});
     }
     else {
       iframe.requestFullscreen().catch(e => window.notify(e));
     }
   };
-  shortcuts.set(span, {
-    id: 'fullscreen',
-    action: span.onclick
-  });
-  document.getElementById('toolbar').appendChild(span);
+  shortcuts.set(span, {id: 'fullscreen', action: span.onclick});
 }
+
 /* design mode */
 {
-  const span = document.createElement('span');
-  span.classList.add('hidden', 'icon-design');
-  span.id = 'design-mode-button';
-  span.title = chrome.i18n.getMessage('rd_design');
-  span.dataset.cmd = 'toggle-design-mode';
-  shortcuts.set(span, {
-    id: 'design-mode',
-    action() {
-      span.click();
-    }
-  });
-  document.getElementById('toolbar').appendChild(span);
+  const span = createButton('design-mode-button', 'icon-design', 'rd_design', {cmd: 'toggle-design-mode'});
+  shortcuts.set(span, {id: 'design-mode', action() { span.click(); }});
 }
 
 /* images */
 {
-  const span = document.createElement('span');
-  span.classList.add('hidden');
-  span.id = 'images-button';
-  span.title = chrome.i18n.getMessage('rd_images');
-  span.dataset.cmd = 'open-image-utils';
+  const span = createButton('images-button', '', 'rd_images', {cmd: 'open-image-utils'});
   shortcuts.set(span, {
     id: 'images',
     action() {
@@ -525,41 +489,21 @@ shortcuts.render = (spans = shortcuts.keys()) => {
       });
     }
   });
-  document.getElementById('toolbar').appendChild(span);
 }
 
 /* note */
 {
-  const span = document.createElement('span');
-  span.title = chrome.i18n.getMessage('rd_note');
-  span.classList.add('icon-note', 'hidden');
-  span.id = 'note-button';
-
+  const span = createButton('note-button', 'icon-note', 'rd_note');
   span.onclick = () => {
     document.dispatchEvent(new Event('add-note'));
   };
-  shortcuts.set(span, {
-    id: 'note',
-    action: span.onclick
-  });
-  document.getElementById('toolbar').appendChild(span);
+  shortcuts.set(span, {id: 'note', action: span.onclick});
 }
 
 /* highlight */
 {
-  const span = document.createElement('span');
-  span.classList.add('hidden', 'icon-highlight');
-  span.id = 'highlight-button';
-  span.title = chrome.i18n.getMessage('rd_highlight');
-  span.dataset.cmd = 'toggle-highlight';
-  span.dataset.disabled = true;
-  shortcuts.set(span, {
-    id: 'highlight',
-    action() {
-      span.click();
-    }
-  });
-  document.getElementById('toolbar').appendChild(span);
+  const span = createButton('highlight-button', 'icon-highlight', 'rd_highlight', {cmd: 'toggle-highlight', disabled: true});
+  shortcuts.set(span, {id: 'highlight', action() { span.click(); }});
 
   chrome.runtime.onMessage.addListener(request => {
     if (request.cmd === 'append-highlights' && request.href === args.get('url').split('#')[0]) {
@@ -840,11 +784,6 @@ const render = async () => {
     return location.replace(args.get('url'));
   }
 
-  const gcs = window.getComputedStyle(document.documentElement);
-
-  const {textVide} = await import('./libs/text-vide/index.mjs');
-  // http://add0n.com/chrome-reader-view.html#IDComment1118667428
-
   let content = article.content;
 
   // each article has two elements
@@ -867,7 +806,8 @@ const render = async () => {
   }
 
   if (config.prefs['fixation-point']) {
-    content = textVide(article.content.replace(/&nbsp;/g, ' '), {
+    const {textVide} = await import('./libs/text-vide/index.mjs');
+    content = textVide(content.replace(/&nbsp;/g, ' '), {
       fixationPoint: config.prefs['fixation-point']
     });
   }
@@ -878,66 +818,7 @@ const render = async () => {
   if (article.lang) {
     iframe.contentDocument.documentElement.setAttribute('lang', article.lang);
   }
-  iframe.contentDocument.getElementById('ftp').textContent = `html[data-mode="light"] {
-    color-scheme: light;
-    --fg: ${gcs.getPropertyValue('--color-mode-light-color')};
-    --bd: ${gcs.getPropertyValue('--color-mode-light-color')};
-    --bg: ${gcs.getPropertyValue('--color-mode-light-bg')};
-  }
-  html[data-mode="dark"] {
-    color-scheme: dark;
-    --fg: ${gcs.getPropertyValue('--color-mode-dark-color')};
-    --bd: ${gcs.getPropertyValue('--color-mode-dark-color')};
-    --bg: ${gcs.getPropertyValue('--color-mode-dark-bg')};
-  }
-  html[data-mode="sepia"] {
-    color-scheme: light;
-    --fg: ${gcs.getPropertyValue('--color-mode-sepia-color')};
-    --bd: ${gcs.getPropertyValue('--color-mode-sepia-color')};
-    --bg: ${gcs.getPropertyValue('--color-mode-sepia-bg')};
-  }
-  html[data-mode="solarized-light"] {
-    color-scheme: light;
-    --fg: ${gcs.getPropertyValue('--color-mode-solarized-light-color')};
-    --bd: ${gcs.getPropertyValue('--color-mode-solarized-light-color')};
-    --bg: ${gcs.getPropertyValue('--color-mode-solarized-light-bg')};
-  }
-  html[data-mode="nord-light"] {
-    color-scheme: light;
-    --fg: ${gcs.getPropertyValue('--color-mode-nord-light-color')};
-    --bd: ${gcs.getPropertyValue('--color-mode-nord-light-color')};
-    --bg: ${gcs.getPropertyValue('--color-mode-nord-light-bg')};
-  }
-  html[data-mode="groove-dark"] {
-    color-scheme: dark;
-    --fg: ${gcs.getPropertyValue('--color-mode-groove-dark-color')};
-    --bd: ${gcs.getPropertyValue('--color-mode-groove-dark-color')};
-    --bg: ${gcs.getPropertyValue('--color-mode-groove-dark-bg')}
-  }
-  html[data-mode="solarized-dark"] {
-    color-scheme: dark;
-    --fg: ${gcs.getPropertyValue('--color-mode-solarized-dark-color')};
-    --bd: ${gcs.getPropertyValue('--color-mode-solarized-dark-color')};
-    --bg: ${gcs.getPropertyValue('--color-mode-solarized-dark-bg')};
-  }
-  html[data-mode="nord-dark"] {
-    color-scheme: dark;
-    --fg: ${gcs.getPropertyValue('--color-mode-nord-dark-color')};
-    --bd: ${gcs.getPropertyValue('--color-mode-nord-dark-color')};
-    --bg: ${gcs.getPropertyValue('--color-mode-nord-dark-bg')};
-  }
-  html[data-mode="rose-light"] {
-    color-scheme: light;
-    --fg: ${gcs.getPropertyValue('--color-mode-rose-light-color')};
-    --bd: ${gcs.getPropertyValue('--color-mode-rose-light-color')};
-    --bg: ${gcs.getPropertyValue('--color-mode-rose-light-bg')};
-  }
-  html[data-mode="rose-dark"] {
-    color-scheme: dark;
-    --fg: ${gcs.getPropertyValue('--color-mode-rose-dark-color')};
-    --bd: ${gcs.getPropertyValue('--color-mode-rose-dark-color')};
-    --bg: ${gcs.getPropertyValue('--color-mode-rose-dark-bg')};
-  }`;
+  iframe.contentDocument.getElementById('ftp').textContent = defaults.themeCSS();
   iframe.contentDocument.getElementById('reader-title').textContent = article.title || 'Unknown Title';
   iframe.contentDocument.getElementById('reader-content').outerHTML = content;
   iframe.contentDocument.getElementById('reader-credits').textContent = article.byline || '';
@@ -1275,32 +1156,14 @@ Promise.all([
 
     document.body.dataset.toolbar = config.prefs['toggle-toolbar'];
 
-    if (config.prefs['printing-button']) {
-      document.getElementById('printing-button').classList.remove('hidden');
-    }
-    if (config.prefs['screenshot-button']) {
-      document.getElementById('screenshot-button').classList.remove('hidden');
-    }
-    if (config.prefs['note-button']) {
-      document.getElementById('note-button').classList.remove('hidden');
-    }
-    if (config.prefs['mail-button']) {
-      document.getElementById('mail-button').classList.remove('hidden');
-    }
-    if (config.prefs['save-button']) {
-      document.getElementById('save-button').classList.remove('hidden');
-    }
-    if (config.prefs['fullscreen-button']) {
-      document.getElementById('fullscreen-button').classList.remove('hidden');
-    }
-    if (config.prefs['images-button']) {
-      document.getElementById('images-button').classList.remove('hidden');
-    }
-    if (config.prefs['highlight-button']) {
-      document.getElementById('highlight-button').classList.remove('hidden');
-    }
-    if (config.prefs['design-mode-button']) {
-      document.getElementById('design-mode-button').classList.remove('hidden');
+    for (const id of [
+      'printing-button', 'screenshot-button', 'note-button', 'mail-button',
+      'save-button', 'fullscreen-button', 'images-button', 'highlight-button',
+      'design-mode-button'
+    ]) {
+      if (config.prefs[id]) {
+        document.getElementById(id).classList.remove('hidden');
+      }
     }
     update.images();
     update.async();

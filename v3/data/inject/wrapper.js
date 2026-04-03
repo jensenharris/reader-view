@@ -431,12 +431,13 @@ try {
           article.doi = doi.href;
         }
         else {
-          const n = /doi:\s([^\s]{3,})/i.exec(document.body.innerText);
+          const bodyText = document.body.innerText;
+          const n = /doi:\s([^\s]{3,})/i.exec(bodyText);
           if (n) {
             article.doi = 'https://doi.org/' + n[1];
           }
           else {
-            const m = /https:\/\/doi\.org\/[^\s]{4,}/.exec(document.body.innerText);
+            const m = /https:\/\/doi\.org\/[^\s]{4,}/.exec(bodyText);
             if (m) {
               article.doi = m[0];
             }
@@ -506,54 +507,7 @@ try {
               width: ${prefs.width ? prefs.width + 'px' : 'calc(100vw - 50px)'};
             }
           ` + prefs['user-css'];
-          head.querySelector('#ftp').textContent = `html[data-mode="light"] {
-    color-scheme: light;
-    --fg: #222;
-    --bd: #222;
-    --bg: whitesmoke;
-  }
-  html[data-mode="dark"] {
-    color-scheme: dark;
-    --fg: #eee;
-    --bd: #eee;
-    --bg: #333;
-  }
-  html[data-mode="sepia"] {
-    color-scheme: light;
-    --fg: #5b4636;
-    --bd: #5b4636;
-    --bg: #f4ecd8;
-  }
-  html[data-mode="solarized-light"] {
-    color-scheme: light;
-    --fg: #586e75;
-    --bd: #586e75;
-    --bg: #fdf6e3;
-  }
-  html[data-mode="nord-light"] {
-    color-scheme: light;
-    --fg: #cec4ac;
-    --bd: #cec4ac;
-    --bg: #282828;
-  }
-  html[data-mode="groove-dark"] {
-    color-scheme: dark;
-    --fg: #cec4ac;
-    --bd: #cec4ac;
-    --bg: #282828;
-  }
-  html[data-mode="solarized-dark"] {
-    color-scheme: dark;
-    --fg: #839496;
-    --bd: #839496;
-    --bg: #002b36;
-  }
-  html[data-mode="nord-dark"] {
-    color-scheme: dark;
-    --fg: #e5e9f0;
-    --bd: #e5e9f0;
-    --bg: #2e3440;
-  }`;
+          head.querySelector('#ftp').textContent = defaults.themeCSS();
           document.head.replaceWith(head);
           const body = dom.querySelector('body');
           body.querySelector('#reader-content').outerHTML = article.content;

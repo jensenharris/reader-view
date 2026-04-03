@@ -213,6 +213,7 @@ const onMessage = (request, sender, response) => {
   }
   else if (request.cmd === 'update-data') {
     aStorage.set(sender.tab.id, request.article).then(() => response(true));
+    return true;
   }
   else if (request.cmd === 'open') {
     const id = sender.tab ? sender.tab.id : '';

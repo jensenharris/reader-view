@@ -21,6 +21,22 @@
 /* global config */
 'use strict';
 
+const checkboxPrefs = [
+  'auto-fullscreen', 'embedded', 'os-sync', 'display-loader',
+  'reader-mode', 'faqs', 'cache-highlights',
+  'context-open-in-reader-view', 'context-open-in-reader-view-bg',
+  'context-switch-to-reader-view',
+  'printing-button', 'screenshot-button', 'note-button', 'mail-button',
+  'save-button', 'fullscreen-button', 'speech-button', 'images-button',
+  'highlight-button', 'design-mode-button', 'navigate-buttons', 'show-icon',
+  './plugins/tip/core.mjs', './plugins/doi/core.mjs',
+  './plugins/note/core.mjs', './plugins/notify/core.mjs',
+  './plugins/health/core.mjs', './plugins/chapters/core.mjs',
+  './plugins/multiple-articles/core.mjs', './plugins/qr-code/core.mjs'
+];
+
+const valuePrefs = ['user-css', 'tts-scroll', 'highlights-count'];
+
 // optional permission
 {
   const request = e => {
@@ -140,53 +156,26 @@ function save() {
   const el = document.getElementById('max-wait-for-page-load');
   const waitTime = Math.max(0, Number.isNaN(el.valueAsNumber) ? 3 : el.valueAsNumber);
 
-  chrome.storage.local.set({
+  const prefs = {};
+  for (const key of checkboxPrefs) {
+    prefs[key] = document.getElementById(key).checked;
+  }
+  for (const key of valuePrefs) {
+    prefs[key] = document.getElementById(key).value;
+  }
+
+  Object.assign(prefs, {
     'auto-rules': json,
-    'auto-fullscreen': document.getElementById('auto-fullscreen').checked,
-    'embedded': document.getElementById('embedded').checked,
     'top-css': document.getElementById('top-style').value,
-    'user-css': document.getElementById('user-css').value,
-    'os-sync': document.getElementById('os-sync').checked,
-    'display-loader': document.getElementById('display-loader').checked,
     'max-wait-for-page-load': waitTime,
     'user-action': actions,
-    'reader-mode': document.getElementById('reader-mode').checked,
-    'faqs': document.getElementById('faqs').checked,
     'tts-delay': Math.max(document.getElementById('tts-delay').value, 0),
-    'tts-scroll': document.getElementById('tts-scroll').value,
-    'cache-highlights': Math.max(document.getElementById('cache-highlights').checked, 0),
-    'highlights-count': document.getElementById('highlights-count').value,
-    'context-open-in-reader-view': document.getElementById('context-open-in-reader-view').checked,
-    'context-open-in-reader-view-bg': document.getElementById('context-open-in-reader-view-bg').checked,
-    'context-switch-to-reader-view': document.getElementById('context-switch-to-reader-view').checked,
-
-    'printing-button': document.getElementById('printing-button').checked,
-    'screenshot-button': document.getElementById('screenshot-button').checked,
-    'note-button': document.getElementById('note-button').checked,
-    'mail-button': document.getElementById('mail-button').checked,
-    'save-button': document.getElementById('save-button').checked,
-    'fullscreen-button': document.getElementById('fullscreen-button').checked,
-    'speech-button': document.getElementById('speech-button').checked,
-    'images-button': document.getElementById('images-button').checked,
-    'highlight-button': document.getElementById('highlight-button').checked,
-    'design-mode-button': document.getElementById('design-mode-button').checked,
-    'navigate-buttons': document.getElementById('navigate-buttons').checked,
-    'show-icon': document.getElementById('show-icon').checked,
     'title': document.getElementById('title').value || '[ORIGINAL] :: [BRAND]',
-
     'supported-fonts': Array.from(fonts, ([name, value]) => ({name, value})),
-
-    './plugins/tip/core.mjs': document.getElementById('./plugins/tip/core.mjs').checked,
-    './plugins/doi/core.mjs': document.getElementById('./plugins/doi/core.mjs').checked,
-    './plugins/note/core.mjs': document.getElementById('./plugins/note/core.mjs').checked,
-    './plugins/notify/core.mjs': document.getElementById('./plugins/notify/core.mjs').checked,
-    './plugins/health/core.mjs': document.getElementById('./plugins/health/core.mjs').checked,
-    './plugins/chapters/core.mjs': document.getElementById('./plugins/chapters/core.mjs').checked,
-    './plugins/multiple-articles/core.mjs': document.getElementById('./plugins/multiple-articles/core.mjs').checked,
-    './plugins/qr-code/core.mjs': document.getElementById('./plugins/qr-code/core.mjs').checked,
-
     shortcuts
-  }, () => {
+  });
+
+  chrome.storage.local.set(prefs, () => {
     const status = document.getElementById('status');
     status.textContent = 'Options saved.';
     setTimeout(() => status.textContent = '', 750);
@@ -194,51 +183,19 @@ function save() {
 }
 
 function restore() {
-  document.getElementById('auto-fullscreen').checked = config.prefs['auto-fullscreen'];
+  for (const key of checkboxPrefs) {
+    document.getElementById(key).checked = config.prefs[key];
+  }
+  for (const key of valuePrefs) {
+    document.getElementById(key).value = config.prefs[key];
+  }
+
   document.getElementById('auto-rules').value = config.prefs['auto-rules'].join(', ');
-
-  document.getElementById('embedded').checked = config.prefs['embedded'];
   document.getElementById('top-style').value = config.prefs['top-css'];
-  document.getElementById('user-css').value = config.prefs['user-css'];
   document.getElementById('user-action').value = JSON.stringify(config.prefs['user-action'], null, '  ');
-  document.getElementById('os-sync').checked = config.prefs['os-sync'];
-  document.getElementById('display-loader').checked = config.prefs['display-loader'];
   document.getElementById('max-wait-for-page-load').value = config.prefs['max-wait-for-page-load'];
-
-  document.getElementById('printing-button').checked = config.prefs['printing-button'];
-  document.getElementById('screenshot-button').checked = config.prefs['screenshot-button'];
-  document.getElementById('note-button').checked = config.prefs['note-button'];
-  document.getElementById('mail-button').checked = config.prefs['mail-button'];
-  document.getElementById('save-button').checked = config.prefs['save-button'];
-  document.getElementById('fullscreen-button').checked = config.prefs['fullscreen-button'];
-  document.getElementById('speech-button').checked = config.prefs['speech-button'];
-  document.getElementById('images-button').checked = config.prefs['images-button'];
-  document.getElementById('highlight-button').checked = config.prefs['highlight-button'];
-  document.getElementById('design-mode-button').checked = config.prefs['design-mode-button'];
-  document.getElementById('navigate-buttons').checked = config.prefs['navigate-buttons'];
-  document.getElementById('show-icon').checked = config.prefs['show-icon'];
-  document.getElementById('title').value = config.prefs['title'];
-
-  document.getElementById('reader-mode').checked = config.prefs['reader-mode'];
-  document.getElementById('faqs').checked = config.prefs['faqs'];
   document.getElementById('tts-delay').value = config.prefs['tts-delay'];
-  document.getElementById('tts-scroll').value = config.prefs['tts-scroll'];
-  document.getElementById('cache-highlights').checked = config.prefs['cache-highlights'];
-  document.getElementById('highlights-count').value = config.prefs['highlights-count'];
-  document.getElementById('context-open-in-reader-view').checked = config.prefs['context-open-in-reader-view'];
-  document.getElementById('context-open-in-reader-view-bg').checked = config.prefs['context-open-in-reader-view-bg'];
-  document.getElementById('context-switch-to-reader-view').checked = config.prefs['context-switch-to-reader-view'];
-
-  document.getElementById('./plugins/tip/core.mjs').checked = config.prefs['./plugins/tip/core.mjs'];
-  document.getElementById('./plugins/doi/core.mjs').checked = config.prefs['./plugins/doi/core.mjs'];
-  document.getElementById('./plugins/note/core.mjs').checked = config.prefs['./plugins/note/core.mjs'];
-  document.getElementById('./plugins/notify/core.mjs').checked = config.prefs['./plugins/notify/core.mjs'];
-  document.getElementById('./plugins/health/core.mjs').checked = config.prefs['./plugins/health/core.mjs'];
-  document.getElementById('./plugins/chapters/core.mjs').checked = config.prefs['./plugins/chapters/core.mjs'];
-  document.getElementById('./plugins/multiple-articles/core.mjs').checked =
-    config.prefs['./plugins/multiple-articles/core.mjs'];
-  document.getElementById('./plugins/qr-code/core.mjs').checked =
-    config.prefs['./plugins/qr-code/core.mjs'];
+  document.getElementById('title').value = config.prefs['title'];
 
   for (const div of [...document.getElementById('shortcuts').querySelectorAll('div')]) {
     const [ctrl, shift] = [...div.querySelectorAll('input[type=checkbox]')];

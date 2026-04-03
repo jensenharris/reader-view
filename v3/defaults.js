@@ -156,6 +156,25 @@ html[data-mode=dark] body {}`,
   './plugins/tts/core.mjs': true,
   './plugins/chapters/core.mjs': true,
   './plugins/multiple-articles/core.mjs': true,
-  './plugins/qr-code/core.mjs': true
+  './plugins/qr-code/core.mjs': true,
+  'themes': [
+    {id: 'light', scheme: 'light', fg: '#222', bg: 'whitesmoke'},
+    {id: 'dark', scheme: 'dark', fg: '#eee', bg: '#333'},
+    {id: 'sepia', scheme: 'light', fg: '#5b4636', bg: '#f4ecd8'},
+    {id: 'groove-dark', scheme: 'dark', fg: '#cec4ac', bg: '#282828'},
+    {id: 'solarized-light', scheme: 'light', fg: '#475b62', bg: '#fdf6e3'},
+    {id: 'solarized-dark', scheme: 'dark', fg: '#94a5a6', bg: '#002b36'},
+    {id: 'nord-light', scheme: 'light', fg: '#2e3440', bg: '#e5e9f0'},
+    {id: 'nord-dark', scheme: 'dark', fg: '#e5e9f0', bg: '#2e3440'},
+    {id: 'rose-light', scheme: 'light', fg: '#452e36', bg: '#f5eaed'},
+    {id: 'rose-dark', scheme: 'dark', fg: '#d4b2b8', bg: '#2c1f23'}
+  ]
 };
+
+self.defaults.themeCSS = () => defaults.themes.map(t => `html[data-mode="${t.id}"] {
+    color-scheme: ${t.scheme};
+    --fg: ${t.fg};
+    --bd: ${t.fg};
+    --bg: ${t.bg};
+  }`).join('\n  ');
 

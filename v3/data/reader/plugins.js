@@ -59,8 +59,8 @@ chrome.storage.onChanged.addListener(ps => {
   if ('./plugins/notify/core.mjs' in ps) {
     import('./plugins/notify/core.mjs').then(o => o[ps['./plugins/notify/core.mjs'].newValue ? 'enable' : 'disable']());
   }
-  if ('.plugins/health/core.mjs' in ps) {
-    import('.plugins/health/core.mjs').then(o => o[ps['.plugins/health/core.mjs'].newValue ? 'enable' : 'disable']());
+  if ('./plugins/health/core.mjs' in ps) {
+    import('./plugins/health/core.mjs').then(o => o[ps['./plugins/health/core.mjs'].newValue ? 'enable' : 'disable']());
   }
   if ('./plugins/tts/core.mjs' in ps) {
     import('./plugins/tts/core.mjs').then(o => o[ps['./plugins/tts/core.mjs'].newValue ? 'enable' : 'disable']());
@@ -69,9 +69,9 @@ chrome.storage.onChanged.addListener(ps => {
     import('./plugins/chapters/core.mjs')
       .then(o => o[ps['./plugins/chapters/core.mjs'].newValue ? 'enable' : 'disable']());
   }
-  if ('./plugins/multiple-article/core.mjs' in ps) {
-    import('./plugins/multiple-article/core.mjs')
-      .then(o => o[ps['./plugins/multiple-article/core.mjs'].newValue ? 'enable' : 'disable']());
+  if ('./plugins/multiple-articles/core.mjs' in ps) {
+    import('./plugins/multiple-articles/core.mjs')
+      .then(o => o[ps['./plugins/multiple-articles/core.mjs'].newValue ? 'enable' : 'disable']());
   }
   if ('./plugins/qr-code/core.mjs' in ps) {
     import('./plugins/qr-code/core.mjs')
